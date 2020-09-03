@@ -1,10 +1,10 @@
-import React, { useCallback, useRef, useContext } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import * as Yup from 'yup';
 import { FiLogIn, FiMail, FiLock } from 'react-icons/fi';
 import getValidationErrors from '../../utils/getValidationErrors';
-import { AuthContext } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/AuthContext';
 import logoImg from '../../assets/logo.svg';
 
 import Input from '../../components/Input';
@@ -19,25 +19,28 @@ interface SignInFormData {
 
 const SignIn: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
-  const { signIn } = useContext(AuthContext);
-  const handleSubmit = useCallback(async (data: SignInFormData) => {
-    try {
-      formRef.current?.setErrors({});
-      const schema = Yup.object().shape({
-        email: Yup.string()
-          .required('E-mail obrigátorio')
-          .email('Digite um e-mail válido'),
-        password: Yup.string().required('Senha Obrigatória'),
-      });
+  const { signIn } = useAuth();
+  const handleSubmit = useCallback(
+    async (data: SignInFormData) => {
+      try {
+        formRef.current?.setErrors({});
+        const schema = Yup.object().shape({
+          email: Yup.string()
+            .required('E-mail obrigátorio')
+            .email('Digite um e-mail válido'),
+          password: Yup.string().required('Senha Obrigatória'),
+        });
 
-      await schema.validate(data, { abortEarly: false });
+        await schema.validate(data, { abortEarly: false });
 
-      signIn({ email: data.email, password: data.password });
-    } catch (error) {
-      const errors = getValidationErrors(error);
-      formRef.current?.setErrors(errors);
-    }
-  }, []);
+        signIn({ email: data.email, password: data.password });
+      } catch (error) {
+        const errors = getValidationErrors(error);
+        formRef.current?.setErrors(errors);
+      }
+    },
+    [signIn],
+  );
   return (
     <Container>
       <Content>
